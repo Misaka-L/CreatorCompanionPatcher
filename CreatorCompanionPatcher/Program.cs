@@ -73,6 +73,7 @@ static async ValueTask<string> ExtraSingleFileExe()
                 Log.Debug("- Extract file: {File} => {FullPath}", bundleFile.RelativePath, fullPath);
                 await bundleFile.ExtractToFileAsync(fullPath);
             }
+#if DEBUG
             catch (IOException ioException)
             {
                 if (!ioException.Message.Contains("because it is being used by another process."))
@@ -81,6 +82,7 @@ static async ValueTask<string> ExtraSingleFileExe()
                         bundleFile.RelativePath, fullPath);
                 }
             }
+#endif
             catch (Exception ex)
             {
                 Log.Error(ex, "A Exception was throw during extract the file: {File} => {FullPath}",
