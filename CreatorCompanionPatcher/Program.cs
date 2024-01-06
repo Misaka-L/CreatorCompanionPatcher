@@ -1,16 +1,17 @@
 ﻿using System.Reflection;
 using CreatorCompanionPatcher.Patch;
+using CreatorCompanionPatcher.PatcherLog;
 using HarmonyLib;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using SingleFileExtractor.Core;
 
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Verbose()
     .WriteTo.Console(theme: AnsiConsoleTheme.Code)
     .WriteTo.Debug()
-    .WriteTo.File("patcher-logs/patcher-.log",
-        rollingInterval: RollingInterval.Day)
+    .WriteTo.File(LogConfig.LogPath, rollingInterval: RollingInterval.Infinite)
+    .WriteTo.LogListener()
     .CreateLogger();
 
 if (!CheckIsPlatformSupport())
@@ -103,9 +104,11 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
     Log.Information("# Applying patches...");
 
     var harmony = new Harmony("xyz.misakal.vcc.patch");
+    Harmony.DEBUG = true;
     var patches = new List<IPatch>()
     {
-        new PackageInstallTimeoutPatch()
+        new PackageInstallTimeoutPatch(),
+        new LoggerPatch()
     };
 
     foreach (var patch in patches)
