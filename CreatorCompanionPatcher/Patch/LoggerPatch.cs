@@ -8,6 +8,8 @@ namespace CreatorCompanionPatcher.Patch;
 
 public class LoggerPatch : IPatch
 {
+    public int Order => -2;
+
     private static object? _apiServerObject;
     private static FieldInfo? _apiServerField;
     private static MethodInfo? _sendWsMessageMethod;

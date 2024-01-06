@@ -6,6 +6,8 @@ namespace CreatorCompanionPatcher.Patch;
 
 public class PackageInstallTimeoutPatch : IPatch
 {
+    public int Order => -1;
+
     public void ApplyPatch(Harmony harmony, Assembly vccAssembly, Assembly vccLibAssembly, Assembly vccCoreLibAssembly)
     {
         var httpClientField = vccCoreLibAssembly
