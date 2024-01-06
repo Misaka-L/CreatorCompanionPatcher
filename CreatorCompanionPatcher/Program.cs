@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using CreatorCompanionPatcher.Models;
 using CreatorCompanionPatcher.Patch;
 using CreatorCompanionPatcher.PatcherLog;
 using HarmonyLib;
@@ -19,6 +20,8 @@ if (!CheckIsPlatformSupport())
     Log.Fatal("Only support Windows yet!");
     return;
 }
+
+PatcherConfig.LoadConfig();
 
 // Extra bundle
 var tempPath = Path.Join(Path.GetTempPath(), Path.GetRandomFileName(), "/");
@@ -99,21 +102,23 @@ static async ValueTask<string> ExtraSingleFileExe(string tempPath)
     return !File.Exists(vccDllPath) ? vccExePath : vccDllPath;
 }
 
+
 static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly vccCoreLibAssembly)
 {
     Log.Information("# Applying patches...");
 
     var harmony = new Harmony("xyz.misakal.vcc.patch");
-    Harmony.DEBUG = true;
-    var patches = new List<IPatch>()
-    {
-        new PackageInstallTimeoutPatch(),
-        new LoggerPatch()
-    };
+
+    var patches = Assembly.GetExecutingAssembly().GetTypes()
+        .Where(type => type.IsAssignableTo(typeof(IPatch)))
+        .Where(type => PatcherConfig.Instance.EnabledPatches.Contains(type.Name))
+        .Select(type => Activator.CreateInstance(type) as IPatch)
+        .OrderBy(patch => patch?.Order)
+        .ToArray();
 
     foreach (var patch in patches)
     {
-        Log.Information("- Apply patch: {Name}", patch.GetType().Name);
-        patch.ApplyPatch(harmony, vccAssembly, vccLibAssembly, vccCoreLibAssembly);
+        Log.Information("- Apply patch: {Name}", patch?.GetType().Name);
+        patch?.ApplyPatch(harmony, vccAssembly, vccLibAssembly, vccCoreLibAssembly);
     }
 }
