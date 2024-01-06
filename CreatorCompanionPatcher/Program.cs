@@ -1,18 +1,16 @@
-﻿using System.Drawing;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿using System.Reflection;
 using CreatorCompanionPatcher.Patch;
 using HarmonyLib;
 using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
 using SingleFileExtractor.Core;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .WriteTo.Console()
+    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
     .WriteTo.Debug()
-    .WriteTo.File("patcher-logs/patcher-.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("patcher-logs/patcher-.log",
+        rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 if (!CheckIsPlatformSupport())
@@ -22,9 +20,11 @@ if (!CheckIsPlatformSupport())
 }
 
 // Extra bundle
-var vccDllPath = await ExtraSingleFileExe();
-var vccLibPath = Path.GetFullPath("vcc-lib.dll");
-var vccCoreLibPath = Path.GetFullPath("vpm-core-lib");
+var tempPath = Path.Join(Path.GetTempPath(), Path.GetRandomFileName(), "/");
+
+var vccDllPath = await ExtraSingleFileExe(tempPath);
+var vccLibPath = Path.GetFullPath(Path.Join(tempPath, "vcc-lib.dll"));
+var vccCoreLibPath = Path.GetFullPath(Path.Join(tempPath, "vpm-core-lib"));
 
 // Load Assembly and apply patch
 
@@ -44,6 +44,7 @@ static void StartApp(Assembly vccAssembly)
     var vccProgramType = vccAssembly.GetType("VCCApp.Program");
     var mainMethod = vccProgramType.GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Static);
     var thread = new Thread(() => mainMethod.Invoke(null, new object?[] { Array.Empty<string>() }));
+
     thread.SetApartmentState(ApartmentState.STA);
     thread.Start();
 }
@@ -53,20 +54,21 @@ static bool CheckIsPlatformSupport()
     return OperatingSystem.IsWindows();
 }
 
-static async ValueTask<string> ExtraSingleFileExe()
+static async ValueTask<string> ExtraSingleFileExe(string tempPath)
 {
     var vccExePath = Path.GetFullPath("CreatorCompanion.exe");
-    var vccDllPath = Path.GetFullPath("CreatorCompanion.dll");
+    var vccDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanion.dll"));
 
     Log.Information("Check is CreatorCompanion.exe needs to be extracted....");
     var reader = new ExecutableReader(vccExePath);
 
     if (reader.IsSingleFile)
     {
-        Log.Information("# Extract the bundle of CreatorCompanion.exe...");
+        Log.Information("# Extract the bundle of CreatorCompanion.exe to {Path}...", tempPath);
+
         foreach (var bundleFile in reader.Bundle.Files)
         {
-            var fullPath = Path.GetFullPath(bundleFile.RelativePath);
+            var fullPath = Path.GetFullPath(Path.Join(tempPath, bundleFile.RelativePath));
 
             try
             {
