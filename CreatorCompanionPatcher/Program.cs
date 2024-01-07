@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using CreatorCompanionPatcher.Models;
 using CreatorCompanionPatcher.Patch;
 using CreatorCompanionPatcher.PatcherLog;
@@ -6,6 +7,19 @@ using HarmonyLib;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using SingleFileExtractor.Core;
+
+var commandLineArgs = Environment.GetCommandLineArgs().ToList();
+var cleanupArgIndex = commandLineArgs.FindIndex(arg => arg == "-cleanup");
+if (cleanupArgIndex != -1)
+{
+    if (cleanupArgIndex >= commandLineArgs.Count)
+        return;
+
+    var cleanupPath = commandLineArgs[cleanupArgIndex + 1];
+
+    Directory.Delete(cleanupPath, true);
+    return;
+}
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
@@ -38,6 +52,20 @@ var vccLibAssembly = Assembly.LoadFrom(vccLibPath);
 var vccCoreLibAssembly = Assembly.LoadFrom(vccCoreLibPath);
 
 ApplyPatches(vccAssembly, vccLibAssembly, vccCoreLibAssembly);
+
+AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+{
+    Log.Information("Starting Cleanup Temp files...");
+    var selfPath = Process.GetCurrentProcess().MainModule?.FileName;
+
+    if (selfPath is null)
+    {
+        Log.Error("Unable to cleanup Temp files, can't found self executable path");
+        return;
+    }
+
+    Process.Start(selfPath, $"-cleanup {tempPath}");
+};
 
 // Start the vcc
 Log.Information("Done! Starting...");
