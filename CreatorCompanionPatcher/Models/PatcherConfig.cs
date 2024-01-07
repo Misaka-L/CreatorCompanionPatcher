@@ -10,7 +10,8 @@ public class PatcherConfig
     public List<string> EnabledPatches { get; set; } = new()
     {
         nameof(LoggerPatch),
-        nameof(PackageInstallTimeoutPatch)
+        nameof(PackageInstallTimeoutPatch),
+        nameof(DisableTelemetryPatch)
     };
 
     public static PatcherConfig LoadConfig()
