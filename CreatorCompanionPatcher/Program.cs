@@ -71,6 +71,8 @@ AppDomain.CurrentDomain.ProcessExit += (_, _) =>
 Log.Information("Done! Starting...");
 StartApp(vccAssembly);
 
+#region Methods
+
 static void StartApp(Assembly vccAssembly)
 {
     var vccProgramType = vccAssembly.GetType("VCCApp.Program");
@@ -94,38 +96,27 @@ static async ValueTask<string> ExtraSingleFileExe(string tempPath)
     Log.Information("Check is CreatorCompanion.exe needs to be extracted....");
     var reader = new ExecutableReader(vccExePath);
 
-    if (reader.IsSingleFile)
+    if (!reader.IsSingleFile) return !File.Exists(vccDllPath) ? vccExePath : vccDllPath;
+
+    Log.Information("# Extract the bundle of CreatorCompanion.exe to {Path}...", tempPath);
+
+    foreach (var bundleFile in reader.Bundle.Files)
     {
-        Log.Information("# Extract the bundle of CreatorCompanion.exe to {Path}...", tempPath);
+        var fullPath = Path.GetFullPath(Path.Join(tempPath, bundleFile.RelativePath));
 
-        foreach (var bundleFile in reader.Bundle.Files)
+        try
         {
-            var fullPath = Path.GetFullPath(Path.Join(tempPath, bundleFile.RelativePath));
-
-            try
-            {
-                Log.Debug("- Extract file: {File} => {FullPath}", bundleFile.RelativePath, fullPath);
-                await bundleFile.ExtractToFileAsync(fullPath);
-            }
-#if DEBUG
-            catch (IOException ioException)
-            {
-                if (!ioException.Message.Contains("because it is being used by another process."))
-                {
-                    Log.Error(ioException, "A IOException was throw during extract the file: {File} => {FullPath}",
-                        bundleFile.RelativePath, fullPath);
-                }
-            }
-#endif
-            catch (Exception ex)
-            {
-                Log.Error(ex, "A Exception was throw during extract the file: {File} => {FullPath}",
-                    bundleFile.RelativePath, fullPath);
-            }
+            Log.Debug("- Extract file: {File} => {FullPath}", bundleFile.RelativePath, fullPath);
+            await bundleFile.ExtractToFileAsync(fullPath);
         }
-
-        Log.Information("Extract Done!");
+        catch (Exception ex)
+        {
+            Log.Error(ex, "A Exception was throw during extract the file: {File} => {FullPath}",
+                bundleFile.RelativePath, fullPath);
+        }
     }
+
+    Log.Information("Extract Done!");
 
     return !File.Exists(vccDllPath) ? vccExePath : vccDllPath;
 }
@@ -150,3 +141,5 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
         patch?.ApplyPatch(harmony, vccAssembly, vccLibAssembly, vccCoreLibAssembly);
     }
 }
+
+#endregion
