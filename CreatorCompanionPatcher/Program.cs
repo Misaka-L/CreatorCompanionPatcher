@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using CreatorCompanionPatcher;
 using CreatorCompanionPatcher.Models;
 using CreatorCompanionPatcher.Patch;
 using CreatorCompanionPatcher.PatcherLog;
@@ -35,7 +36,7 @@ if (!CheckIsPlatformSupport())
     return;
 }
 
-PatcherConfig.LoadConfig();
+PatcherApp.Config = await PatcherConfig.LoadConfigAsync();
 
 // Extra bundle
 var tempPath = Path.Join(Path.GetTempPath(), Path.GetRandomFileName(), "/");
@@ -130,7 +131,7 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
 
     var patches = Assembly.GetExecutingAssembly().GetTypes()
         .Where(type => type.IsAssignableTo(typeof(IPatch)))
-        .Where(type => PatcherConfig.Instance.EnabledPatches.Contains(type.Name))
+        .Where(type => PatcherApp.Config.EnabledPatches.Contains(type.Name))
         .Select(type => Activator.CreateInstance(type) as IPatch)
         .OrderBy(patch => patch?.Order)
         .ToArray();

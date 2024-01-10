@@ -14,8 +14,7 @@
     <option name="PROJECT_KIND" value="DotNetCore" />
     <option name="PROJECT_TFM" value="net6.0" />
     <method v="2">
-      <option name="Build" default="false" projectName="CreatorCompanionPatcher" projectPath="$PROJECT_DIR$/CreatorCompanionPatcher/CreatorCompanionPatcher.csproj" />
-      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Debug - Copy Patcher" run_configuration_type="DotNetFolderPublish" />
+      <option name="RunConfigurationTask" enabled="false" run_configuration_name="Debug - Copy Patcher" run_configuration_type="DotNetFolderPublish" />
     </method>
   </configuration>
 </component>

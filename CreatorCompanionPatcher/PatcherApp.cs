@@ -1,6 +1,8 @@
-﻿namespace CreatorCompanionPatcher;
+﻿using CreatorCompanionPatcher.Models;
 
-public class PatcherApp
+namespace CreatorCompanionPatcher;
+
+public static class PatcherApp
 {
-    
+    public static PatcherConfig Config;
 }

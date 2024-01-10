@@ -1,29 +1,33 @@
-﻿using System.Text.Json;
-using CreatorCompanionPatcher.Patch;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace CreatorCompanionPatcher.Models;
 
-public class PatcherConfig
+public record PatcherConfig
 {
-    public static PatcherConfig Instance;
-
     public List<string> EnabledPatches { get; set; } = new()
     {
-        nameof(LoggerPatch),
-        nameof(PackageInstallTimeoutPatch),
-        nameof(DisableTelemetryPatch)
+        "LoggerPatch",
+        "PackageInstallTimeoutPatch",
+        "DisableTelemetryPatch"
     };
 
-    public static PatcherConfig LoadConfig()
+    public static async ValueTask<PatcherConfig> LoadConfigAsync(string path = "patcher.json")
     {
-        if (!File.Exists("patcher.json"))
+        if (!File.Exists(path))
         {
-            File.WriteAllText("patcher.json", JsonSerializer.Serialize(new PatcherConfig()));
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new PatcherConfig()));
         }
 
-        var patcherConfig = JsonSerializer.Deserialize<PatcherConfig>(File.ReadAllText("patcher.json"));
-        Instance = patcherConfig ?? throw new InvalidOperationException("Failed to load config from patcher.json");
+        var patcherConfig = JsonSerializer.Deserialize<PatcherConfig>(await File.ReadAllTextAsync(path));
+        return patcherConfig ?? throw new InvalidOperationException("Failed to load config from patcher.json");
+    }
 
-        return patcherConfig;
+    public async Task SaveConfigAsync(string path = "patcher.json")
+    {
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(this));
     }
 }
