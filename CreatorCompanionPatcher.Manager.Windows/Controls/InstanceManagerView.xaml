@@ -1,0 +1,77 @@
+﻿<UserControl x:Class="CreatorCompanionPatcher.Manager.Windows.Controls.InstanceManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:CreatorCompanionPatcher.Manager.Windows.Controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:manager="clr-namespace:CreatorCompanionPatcher.Manager;assembly=CreatorCompanionPatcher.Manager"
+             xmlns:viewModels="clr-namespace:CreatorCompanionPatcher.Manager.Windows.ViewModels"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             d:DataContext="{d:DesignInstance viewModels:InstanceManagerViewModel}"
+             mc:Ignorable="d"
+             d:DesignHeight="565" d:DesignWidth="1080">
+
+    <Grid Background="{DynamicResource SecondaryRegionBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ListView Name="MenuList" ItemsSource="{Binding MenuItems}" BorderThickness="0 0 1 0" BorderBrush="{DynamicResource SecondaryBorderBrush}"
+                      Width="200">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:InstanceManagerViewMenuItem}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="{Binding Icon}" Margin="0 0 8 0" />
+                            <TextBlock Text="{Binding Title}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Grid Grid.Column="1">
+                <ContentControl Content="{Binding ElementName=MenuList, Path=SelectedItem.(local:InstanceManagerViewMenuItem.Control)}"/>
+            </Grid>
+        </Grid>
+        <Border Grid.Row="2" BorderBrush="{DynamicResource SecondaryBorderBrush}" BorderThickness="0 1 0 0">
+            <Grid Margin="14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <iconPacks:PackIconMaterial Kind="CubeOutline" Width="40" Height="40"
+                                            Foreground="{DynamicResource PrimaryTextBrush}"
+                                            Margin="{StaticResource DefaultControlPadding}"
+                                            VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="v0.4.1 Installed" FontSize="{DynamicResource HeadFontSize}"
+                               Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="{Binding PatcherPath, TargetNullValue='No Instance Selected'}"
+                               FontSize="{DynamicResource TextFontSize}"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal"
+                            Margin="{StaticResource DefaultControlPadding}">
+                    <Button Content="Open in Explorer" Command="{Binding OpenInExplorerCommand}"
+                            FontSize="{DynamicResource SubHeadFontSize}" Height="40" Margin="8 0" />
+                    <hc:SplitButton Content="Launch" Command="{Binding LaunchInstanceCommand}"
+                                    FontSize="{DynamicResource SubHeadFontSize}" Height="40"
+                                    Style="{StaticResource SplitButtonPrimary}">
+                        <hc:SplitButton.DropDownContent>
+                            <StackPanel>
+                                <MenuItem Header="Debug" Command="{Binding LaunchDebugInstanceCommand}"
+                                          CommandParameter="true" />
+                            </StackPanel>
+                        </hc:SplitButton.DropDownContent>
+                    </hc:SplitButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

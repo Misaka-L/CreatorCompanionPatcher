@@ -1,0 +1,17 @@
+﻿<Application x:Class="CreatorCompanionPatcher.Manager.Windows.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CreatorCompanionPatcher.Manager.Windows"
+             xmlns:converters="clr-namespace:CreatorCompanionPatcher.Manager.Windows.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/> -->
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDark.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:NullVisibilityConverter x:Key="NullVisibilityConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
