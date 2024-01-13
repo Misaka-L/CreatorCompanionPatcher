@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreatorCompanionPatcher", "CreatorCompanionPatcher\CreatorCompanionPatcher.csproj", "{8FBAC78E-1B9A-40A8-93A0-333112272302}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreatorCompanionPatcher.Core", "CreatorCompanionPatcher.Core\CreatorCompanionPatcher.Core.csproj", "{66B9C775-04F7-4823-A89E-5C94CA042FAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{8FBAC78E-1B9A-40A8-93A0-333112272302}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FBAC78E-1B9A-40A8-93A0-333112272302}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FBAC78E-1B9A-40A8-93A0-333112272302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

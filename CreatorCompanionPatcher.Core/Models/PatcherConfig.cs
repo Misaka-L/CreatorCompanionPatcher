@@ -15,6 +15,9 @@ public record PatcherConfig
         "DisableTelemetryPatch"
     };
 
+    public string? ReplaceOfficialReposUrl { get; set; }
+    public string? ReplaceCuratedReposUrl { get; set; }
+
     public static async ValueTask<PatcherConfig> LoadConfigAsync(string path = "patcher.json")
     {
         if (!File.Exists(path))
