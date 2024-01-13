@@ -4,7 +4,7 @@ using Serilog;
 
 namespace CreatorCompanionPatcher.Patch;
 
-public class DisableOfficialReposPatch : IPatch
+public class ReplaceOfficialReposPatch : IPatch
 {
     public int Order => 1;
 
@@ -18,27 +18,30 @@ public class DisableOfficialReposPatch : IPatch
 
         if (reposType is null)
         {
-            Log.Error("Failed to find Repos type, DisableOfficialReposPatch patch won't apply");
+            Log.Error("Failed to find Repos type, ReplaceOfficialReposPatch patch won't apply");
             return;
         }
 
         if (vpmPackageProviderType is null)
         {
-            Log.Error("Failed to find VPMPackageProvider type, DisableOfficialReposPatch patch won't apply");
+            Log.Error("Failed to find VPMPackageProvider type, ReplaceOfficialReposPatch patch won't apply");
             return;
         }
 
         if (vrcRepoListType is null)
         {
-            Log.Error("Failed to find VRCRepoList type, DisableOfficialReposPatch patch won't apply");
+            Log.Error("Failed to find VRCRepoList type, ReplaceOfficialReposPatch patch won't apply");
             return;
         }
 
         var refreshMethod = vpmPackageProviderType.GetMethod("Refresh", BindingFlags.Instance | BindingFlags.Public);
-        var refreshPrefixMethod = typeof(DisableOfficialReposPatch).GetMethod(nameof(RefreshPrefixMethod),
+        var refreshPrefixMethod = typeof(ReplaceOfficialReposPatch).GetMethod(nameof(RefreshPrefixMethod),
             BindingFlags.NonPublic | BindingFlags.Static);
 
         harmony.Patch(refreshMethod, prefix: new HarmonyMethod(refreshPrefixMethod));
+
+        var providersCacheDirField = reposType.GetField("ProvidersCacheDir", BindingFlags.Static | BindingFlags.Public);
+        var providersCacheDir = providersCacheDirField.GetValue(null) as string;
 
         var createMethod = vpmPackageProviderType.GetMethod("Create", BindingFlags.Static | BindingFlags.Public,
             new[] { typeof(string), typeof(string), vrcRepoListType });
@@ -51,6 +54,22 @@ public class DisableOfficialReposPatch : IPatch
 
         officialRepoField.SetValue(null, emptyVPMPackageProvider);
         curatedRepoField.SetValue(null, emptyVPMPackageProvider);
+
+        if (PatcherApp.Config.ReplaceOfficialReposUrl is {} vccReplaceOfficialReposUrl)
+        {
+            var replaceOfficialRepoProvider = createMethod.Invoke(null,
+                new[] { Path.Combine(providersCacheDir, "replace-vrc-official.json"), vccReplaceOfficialReposUrl, null });
+
+            officialRepoField.SetValue(null, replaceOfficialRepoProvider);
+        }
+
+        if (PatcherApp.Config.ReplaceCuratedReposUrl is {} vccReplaceCuratedReposUrl)
+        {
+            var replaceCuratedRepoProvider = createMethod.Invoke(null,
+                new[] { Path.Combine(providersCacheDir, "replace-vrc-curated.json"), vccReplaceCuratedReposUrl, null });
+
+            curatedRepoField.SetValue(null, replaceCuratedRepoProvider);
+        }
     }
 
     private static bool RefreshPrefixMethod( ref bool __result, string? ____remoteUrl)
