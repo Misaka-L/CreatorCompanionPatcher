@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreatorCompanionPatcher", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreatorCompanionPatcher.Core", "CreatorCompanionPatcher.Core\CreatorCompanionPatcher.Core.csproj", "{66B9C775-04F7-4823-A89E-5C94CA042FAC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreatorCompanionPatcher.Installer", "CreatorCompanionPatcher.Installer\CreatorCompanionPatcher.Installer.csproj", "{F1C5E2A4-3808-42CB-9BAA-927185773488}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66B9C775-04F7-4823-A89E-5C94CA042FAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1C5E2A4-3808-42CB-9BAA-927185773488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1C5E2A4-3808-42CB-9BAA-927185773488}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1C5E2A4-3808-42CB-9BAA-927185773488}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1C5E2A4-3808-42CB-9BAA-927185773488}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
