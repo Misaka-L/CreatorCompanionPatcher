@@ -1,4 +1,4 @@
-name: .NET
+name: Release
 
 on:
   workflow_dispatch:
@@ -42,7 +42,7 @@ jobs:
           /app/CreatorCompanionPatcher.Installer.exe
 
     - name: Fetch Github Releases Data
-      run: wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data
+      run: "wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data"
 
     - name: Upload Patcher
       uses: zinh/ftp-uploader-action@10d256274547c8b84848edf454bfeb0b8a451c41
