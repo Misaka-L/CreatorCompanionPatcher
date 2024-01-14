@@ -13,7 +13,7 @@ public static class UpdateChecker
 {
     private static readonly HttpClient _httpClient = new();
 
-    private static readonly string _checkUpdateUrl = "https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases";
+    private static readonly string _checkUpdateUrl = "https://cn-sy1.rains3.com/vcc-patcher/releases-data/releases-data";
 
     static UpdateChecker()
     {
@@ -45,6 +45,6 @@ public static class UpdateChecker
     {
         var release = await GetLatestReleaseAsync();
 
-        return "v" + currentVersion == release.TagName ? null : release;
+        return currentVersion == release.TagName ? null : release;
     }
 }

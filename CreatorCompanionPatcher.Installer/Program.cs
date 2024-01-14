@@ -5,6 +5,10 @@ using CreatorCompanionPatcher.Core;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
+const string newVersionDownloadUrl = "https://cn-sy1.rains3.com/vcc-patcher/app/CreatorCompanionPatcher.exe";
+const string patcherVersionDataFile = "patcher-version";
+
+
 var logPath = Path.Combine(Path.GetTempPath(), "vcc-patcher-installer-logs/");
 
 Log.Logger = new LoggerConfiguration()
@@ -53,7 +57,7 @@ if (await UpdateChecker.CheckIsNewerReleaseAvailableAsync(patcherVersion) is { }
 {
     Log.Information("Newer release available: {Version}", release.TagName);
     Log.Information("Installing New Version...");
-    await InstallPatcherByUrlAsync(release.Assets[0].BrowserDownloadUrl);
+    await InstallPatcherByUrlAsync(newVersionDownloadUrl, release.TagName);
     Log.Information("Patcher Installed");
 }
 else
@@ -83,15 +87,16 @@ static string? LookupCreatorCompanionPatcher()
 
 static string GetPatcherVersion(string path)
 {
-    if (!File.Exists(path))
-        throw new FileNotFoundException("Patcher not found.", path);
+    var vccPath = Path.GetDirectoryName(path);
+    if (vccPath is null)
+        throw new InvalidOperationException("Could not get patcher directory path.");
 
-    var versionInfo = FileVersionInfo.GetVersionInfo(path);
+    var patcherVersionPath = Path.Combine(vccPath, patcherVersionDataFile);
 
-    if (versionInfo.FileVersion is null)
-        throw new InvalidOperationException("Could not get patcher version.");
+    if (!File.Exists(patcherVersionPath))
+        throw new FileNotFoundException("Could not find patcher version file.", patcherVersionPath);
 
-    return versionInfo.FileVersion;
+    return File.ReadAllText(patcherVersionPath);
 }
 
 static void StartApp(string patcherPath)
@@ -105,10 +110,12 @@ static void StartApp(string patcherPath)
     });
 }
 
-static async Task<string> InstallPatcherByUrlAsync(string patcherFileUrl)
+static async Task<string> InstallPatcherByUrlAsync(string patcherFileUrl, string version)
 {
     var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-    var patcherPath = Path.Combine(localAppData, "Programs/VRChat Creator Companion/CreatorCompanionPatcher.exe");
+    var vccPath = Path.Combine(localAppData, "Programs/VRChat Creator Companion");
+    var patcherPath = Path.Combine(vccPath, "CreatorCompanionPatcher.exe");
+    var versionDataPath = Path.Combine(vccPath, patcherVersionDataFile);
 
     Log.Information("Patcher will be install at {PatcherPath}", patcherPath);
     Log.Information("Downloading patcher from {PatcherFileUrl}...", patcherFileUrl);
@@ -129,6 +136,8 @@ static async Task<string> InstallPatcherByUrlAsync(string patcherFileUrl)
 
     await fileStream.FlushAsync();
 
+    await File.WriteAllTextAsync(versionDataPath, version);
+
     Log.Information("Install Completed!");
 
     return patcherPath;
@@ -139,5 +148,5 @@ static async Task<string> InstallPatcherAsync()
     Log.Information("Fetching latest release from GitHub...");
     var release = await UpdateChecker.GetLatestReleaseAsync();
 
-    return await InstallPatcherByUrlAsync(release.Assets[0].BrowserDownloadUrl);
+    return await InstallPatcherByUrlAsync(newVersionDownloadUrl, release.TagName);
 }
