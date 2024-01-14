@@ -31,7 +31,7 @@ jobs:
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4.1.0
       with: 
-        path: /app/
+        path: ${{ GITHUB_WORKSPACE }}/app/
 
     - name: Github Release
       uses: 6thpath/action-github-release@ba2240e98166a319da08afddd79a2106215bf920
@@ -52,8 +52,8 @@ jobs:
         ftpUsername: ${{ secrets.FtpUsername }}
         ftpPassword: ${{ secrets.FtpPassword }}
         files: |
-          /app/CreatorCompanionPatcher.exe
-          /app/CreatorCompanionPatcher.Installer.exe
+          ${{ GITHUB_WORKSPACE }}/app/CreatorCompanionPatcher.exe
+          ${{ GITHUB_WORKSPACE }}/app/CreatorCompanionPatcher.Installer.exe
         dest: /app-publish
 
     - name: Upload Releases MetaData
