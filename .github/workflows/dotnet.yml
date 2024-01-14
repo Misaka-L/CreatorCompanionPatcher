@@ -24,9 +24,9 @@ jobs:
 
     - name: DotnetVersionFinder
       id: project-version
-      uses: AjdinHusic/DotnetVersionFinder@afe8f8e095ffebc9bf6e4785e0644904e491dcba
+      uses: chenryhabana205/dotnetgetversion@aab13340b6f5044b5b64f970a580c5946d4e8276
       with:
-        path: CreatorCompanionPatcher/CreatorCompanionPatcher.csproj
+        VERSION_FILE_PATH: CreatorCompanionPatcher/CreatorCompanionPatcher.csproj
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4.1.0
@@ -36,7 +36,7 @@ jobs:
     - name: Github Release
       uses: 6thpath/action-github-release@ba2240e98166a319da08afddd79a2106215bf920
       with:
-        tag_name: "v${{ steps.project-version.outputs.version }}"
+        tag_name: "v${{ steps.project-version.outputs.TAG }}"
         generate_release_notes: true
         files: |
           /app/CreatorCompanionPatcher.exe
