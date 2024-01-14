@@ -20,7 +20,7 @@ jobs:
       run: dotnet restore
 
     - name: Publish
-      run: dotnet publish -c release -o /app --no-restore
+      run: dotnet publish -c release -o ${{ github.workspace }}/app --no-restore
 
     - name: DotnetVersionFinder
       id: project-version
