@@ -3,6 +3,9 @@ name: Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
 
@@ -39,8 +42,8 @@ jobs:
         tag_name: "v${{ steps.project-version.outputs.TAG }}"
         generate_release_notes: true
         files: |
-          /app/CreatorCompanionPatcher.exe
-          /app/CreatorCompanionPatcher.Installer.exe
+          ${{ github.workspace }}/app/CreatorCompanionPatcher.exe
+          ${{ github.workspace }}/app/CreatorCompanionPatcher.Installer.exe
 
     - name: Fetch Github Releases Data
       run: "wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data"
