@@ -1,7 +1,10 @@
-name: .NET
+name: Release
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -20,46 +23,47 @@ jobs:
       run: dotnet restore
 
     - name: Publish
-      run: dotnet publish -c release -o /app --no-restore
+      run: dotnet publish -c release -o ${{ github.workspace }}/app --no-restore
 
     - name: DotnetVersionFinder
       id: project-version
-      uses: AjdinHusic/DotnetVersionFinder@afe8f8e095ffebc9bf6e4785e0644904e491dcba
+      uses: chenryhabana205/dotnetgetversion@aab13340b6f5044b5b64f970a580c5946d4e8276
       with:
-        path: CreatorCompanionPatcher/CreatorCompanionPatcher.csproj
+        VERSION_FILE_PATH: CreatorCompanionPatcher/CreatorCompanionPatcher.csproj
 
     - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4.1.0
       with: 
-        path: /app/
+        path: ${{ github.workspace }}/app/
 
     - name: Github Release
       uses: 6thpath/action-github-release@ba2240e98166a319da08afddd79a2106215bf920
       with:
-        tag_name: "v${{ steps.project-version.outputs.version }}"
+        tag_name: "v${{ steps.project-version.outputs.TAG }}"
         generate_release_notes: true
         files: |
-          /app/CreatorCompanionPatcher.exe
-          /app/CreatorCompanionPatcher.Installer.exe
+          ${{ github.workspace }}/app/CreatorCompanionPatcher.exe
+          ${{ github.workspace }}/app/CreatorCompanionPatcher.Installer.exe
 
     - name: Fetch Github Releases Data
-      run: wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data
+      run: |
+        mkdir releases-data
+        wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data/releases-data
 
     - name: Upload Patcher
-      uses: zinh/ftp-uploader-action@10d256274547c8b84848edf454bfeb0b8a451c41
-      with:
-        ftpHostname: ${{ secrets.FtpHostName }}
-        ftpUsername: ${{ secrets.FtpUsername }}
-        ftpPassword: ${{ secrets.FtpPassword }}
-        files: |
-          /app/CreatorCompanionPatcher.exe
-          /app/CreatorCompanionPatcher.Installer.exe
-        dest: /app-publish
+      uses: koraykoska/s3-upload-github-action@c24afca3fabd71531a531cd105110175766aa9d9
+      env:
+        S3_ENDPOINT: ${{ secrets.S3EndPoint }}
+        S3_BUCKET: ${{ secrets.S3Bucket }}
+        S3_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
+        S3_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
+        FILE: ./app/
 
     - name: Upload Releases MetaData
-      uses: zinh/ftp-uploader-action@10d256274547c8b84848edf454bfeb0b8a451c41
-      with:
-        ftpHostname: ${{ secrets.FtpHostName }}
-        ftpUsername: ${{ secrets.FtpUsername }}
-        ftpPassword: ${{ secrets.FtpPassword }}
-        files: releases-data
-        dest: /app-publish
+      uses: koraykoska/s3-upload-github-action@c24afca3fabd71531a531cd105110175766aa9d9
+      env:
+        S3_ENDPOINT: ${{ secrets.S3EndPoint }}
+        S3_BUCKET: ${{ secrets.S3Bucket }}
+        S3_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
+        S3_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
+        FILE: ./releases-data/
