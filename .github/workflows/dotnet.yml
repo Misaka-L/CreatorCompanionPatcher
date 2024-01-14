@@ -29,6 +29,7 @@ jobs:
         path: CreatorCompanionPatcher/CreatorCompanionPatcher.csproj
 
     - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4.1.0
       with: 
         path: /app/
 
