@@ -74,6 +74,12 @@ public class ReplaceOfficialReposPatch : IPatch
 
     private static bool RefreshPrefixMethod( ref bool __result, string? ____remoteUrl)
     {
+        if (____remoteUrl is "https://packages.vrchat.com/official" or "https://packages.vrchat.com/curated")
+        {
+            __result = true;
+            return false;
+        }
+
         if (____remoteUrl is not null) return true;
 
         __result = true;
