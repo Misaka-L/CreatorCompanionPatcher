@@ -53,21 +53,21 @@ jobs:
         gh api repos/{owner}/{repo}/releases > releases-data/releases-data
 
     - name: Upload Patcher
-      uses: prewk/s3-cp-action@667b4425eb185e4eab10459ba4d57e0c68b35b8a
-      with:
-        aws_s3_endpoint: ${{ secrets.S3EndPoint }}
-        aws_access_key_id: ${{ secrets.S3AccessKeyId }}
-        aws_secret_access_key: ${{ secrets.S3AccessKey }}
-        dest: s3://${{ secrets.S3Bucket }}/app
-        aws_region: ''
-        source: ./app/
+      uses: dmolik/sync-s3-action@f9a8704a05e590056387298056a8fea51fc886cd
+      env:
+        AWS_S3_ENDPOINT: ${{ secrets.S3EndPoint }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
+        AWS_S3_BUCKET: ${{ secrets.S3Bucket }}
+        DEST_DIR: /app
+        SOURCE_DIR: ./app/
 
     - name: Upload Releases MetaData
-      uses: prewk/s3-cp-action@667b4425eb185e4eab10459ba4d57e0c68b35b8a
-      with:
-        aws_s3_endpoint: ${{ secrets.S3EndPoint }}
-        aws_access_key_id: ${{ secrets.S3AccessKeyId }}
-        aws_secret_access_key: ${{ secrets.S3AccessKey }}
-        aws_region: ''
-        dest: s3://${{ secrets.S3Bucket }}/releases-data
-        source: ./releases-data/
+      uses: dmolik/sync-s3-action@f9a8704a05e590056387298056a8fea51fc886cd
+      env:
+        AWS_S3_ENDPOINT: ${{ secrets.S3EndPoint }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
+        AWS_S3_BUCKET: ${{ secrets.S3Bucket }}
+        DEST_DIR: /releases-data
+        SOURCE_DIR: ./releases-data/
