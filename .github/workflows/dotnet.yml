@@ -46,7 +46,7 @@ jobs:
           ${{ github.workspace }}/app/CreatorCompanionPatcher.Installer.exe
 
     - name: Fetch Github Releases Data
-    - env:
+      env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir releases-data
