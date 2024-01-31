@@ -64,7 +64,7 @@ jobs:
 
     - name: Upload Releases MetaData
       uses: shallwefootball/upload-s3-action@4350529f410221787ccf424e50133cbc1b52704e
-      env:
+      with:
         endpoint: ${{ secrets.S3EndPoint }}
         aws_key_id: ${{ secrets.S3AccessKeyId }}
         aws_secret_access_key: ${{ secrets.S3AccessKey }}
