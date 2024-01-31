@@ -46,9 +46,11 @@ jobs:
           ${{ github.workspace }}/app/CreatorCompanionPatcher.Installer.exe
 
     - name: Fetch Github Releases Data
+    - env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir releases-data
-        wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data/releases-data
+        gh api repos/{owner}/{repo}/releases > releases-data/releases-data
 
     - name: Upload Patcher
       uses: koraykoska/s3-upload-github-action@c24afca3fabd71531a531cd105110175766aa9d9
