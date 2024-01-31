@@ -53,21 +53,21 @@ jobs:
         gh api repos/{owner}/{repo}/releases > releases-data/releases-data
 
     - name: Upload Patcher
-      uses: dmolik/sync-s3-action@f9a8704a05e590056387298056a8fea51fc886cd
-      env:
-        AWS_S3_ENDPOINT: ${{ secrets.S3EndPoint }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
-        AWS_S3_BUCKET: ${{ secrets.S3Bucket }}
-        DEST_DIR: /app
-        SOURCE_DIR: ./app/
+      uses: shallwefootball/upload-s3-action@4350529f410221787ccf424e50133cbc1b52704e
+      with:
+        endpoint: ${{ secrets.S3EndPoint }}
+        aws_key_id: ${{ secrets.S3AccessKeyId }}
+        aws_secret_access_key: ${{ secrets.S3AccessKey }}
+        aws_bucket: ${{ secrets.S3Bucket }}
+        destination_dir: /app
+        source_dir: ./app/
 
     - name: Upload Releases MetaData
-      uses: dmolik/sync-s3-action@f9a8704a05e590056387298056a8fea51fc886cd
+      uses: shallwefootball/upload-s3-action@4350529f410221787ccf424e50133cbc1b52704e
       env:
-        AWS_S3_ENDPOINT: ${{ secrets.S3EndPoint }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
-        AWS_S3_BUCKET: ${{ secrets.S3Bucket }}
-        DEST_DIR: /releases-data
-        SOURCE_DIR: ./releases-data/
+        endpoint: ${{ secrets.S3EndPoint }}
+        aws_key_id: ${{ secrets.S3AccessKeyId }}
+        aws_secret_access_key: ${{ secrets.S3AccessKey }}
+        aws_bucket: ${{ secrets.S3Bucket }}
+        destination_dir: /releases-data
+        source_dir: ./releases-data/
