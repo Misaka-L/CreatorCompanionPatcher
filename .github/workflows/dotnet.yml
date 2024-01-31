@@ -54,20 +54,20 @@ jobs:
 
     - name: Upload Patcher
       uses: prewk/s3-cp-action@667b4425eb185e4eab10459ba4d57e0c68b35b8a
-      env:
-        AWS_S3_ENDPOINT: ${{ secrets.S3EndPoint }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
-        WAS_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
-        DEST: s3://${{ secrets.S3Bucket }}/app
-        AWS_REGION: ''
-        SOURCE: ./app/
+      with:
+        aws_s3_endpoint: ${{ secrets.S3EndPoint }}
+        aws_access_key_id: ${{ secrets.S3AccessKeyId }}
+        aws_secret_access_key: ${{ secrets.S3AccessKey }}
+        dest: s3://${{ secrets.S3Bucket }}/app
+        aws_region: ''
+        source: ./app/
 
     - name: Upload Releases MetaData
       uses: prewk/s3-cp-action@667b4425eb185e4eab10459ba4d57e0c68b35b8a
-      env:
-        AWS_S3_ENDPOINT: ${{ secrets.S3EndPoint }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
-        WAS_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
-        AWS_REGION: ''
-        DEST: s3://${{ secrets.S3Bucket }}/releases-data
-        SOURCE: ./releases-data/
+      with:
+        aws_s3_endpoint: ${{ secrets.S3EndPoint }}
+        aws_access_key_id: ${{ secrets.S3AccessKeyId }}
+        aws_secret_access_key: ${{ secrets.S3AccessKey }}
+        aws_region: ''
+        dest: s3://${{ secrets.S3Bucket }}/releases-data
+        source: ./releases-data/
