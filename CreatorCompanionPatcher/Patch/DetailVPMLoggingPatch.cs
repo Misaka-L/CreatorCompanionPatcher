@@ -51,8 +51,12 @@ public class DetailVPMLoggingPatch : IPatch
         var getRepoDataPrefixMethod =
             typeof(DetailVPMLoggingPatch).GetMethod(nameof(GetRepoDataPrefixMethod),
                 BindingFlags.Static | BindingFlags.NonPublic);
+        var getRepoDataPostfixMethod
+            = typeof(DetailVPMLoggingPatch).GetMethod(nameof(GetRepoDataPostfixMethod),
+                BindingFlags.Static | BindingFlags.NonPublic);
 
-        harmony.Patch(getRepoDataMethod, prefix: new HarmonyMethod(getRepoDataPrefixMethod));
+        harmony.Patch(getRepoDataMethod, prefix: new HarmonyMethod(getRepoDataPrefixMethod),
+            postfix: new HarmonyMethod(getRepoDataPostfixMethod));
 
         #endregion
 
@@ -93,6 +97,18 @@ public class DetailVPMLoggingPatch : IPatch
     }
 
     #endregion
+
+    private static void GetRepoDataPostfixMethod(Uri url, Task __result)
+    {
+        try
+        {
+            __result.Wait();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to get repository listing from {Url}", url);
+        }
+    }
 
     #region VRC.PackageManagement.Core.Types.Providers.VPMPackageProvider
 
