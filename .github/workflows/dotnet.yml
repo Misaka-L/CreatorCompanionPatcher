@@ -46,24 +46,28 @@ jobs:
           ${{ github.workspace }}/app/CreatorCompanionPatcher.Installer.exe
 
     - name: Fetch Github Releases Data
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir releases-data
-        wget https://api.github.com/repos/Misaka-L/CreatorCompanionPatcher/releases --output-document=releases-data/releases-data
+        gh api repos/{owner}/{repo}/releases > releases-data/releases-data
 
     - name: Upload Patcher
-      uses: koraykoska/s3-upload-github-action@c24afca3fabd71531a531cd105110175766aa9d9
-      env:
-        S3_ENDPOINT: ${{ secrets.S3EndPoint }}
-        S3_BUCKET: ${{ secrets.S3Bucket }}
-        S3_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
-        S3_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
-        FILE: ./app/
+      uses: shallwefootball/upload-s3-action@4350529f410221787ccf424e50133cbc1b52704e
+      with:
+        endpoint: ${{ secrets.S3EndPoint }}
+        aws_key_id: ${{ secrets.S3AccessKeyId }}
+        aws_secret_access_key: ${{ secrets.S3AccessKey }}
+        aws_bucket: ${{ secrets.S3Bucket }}
+        destination_dir: /app
+        source_dir: ./app/
 
     - name: Upload Releases MetaData
-      uses: koraykoska/s3-upload-github-action@c24afca3fabd71531a531cd105110175766aa9d9
-      env:
-        S3_ENDPOINT: ${{ secrets.S3EndPoint }}
-        S3_BUCKET: ${{ secrets.S3Bucket }}
-        S3_ACCESS_KEY_ID: ${{ secrets.S3AccessKeyId }}
-        S3_SECRET_ACCESS_KEY: ${{ secrets.S3AccessKey }}
-        FILE: ./releases-data/
+      uses: shallwefootball/upload-s3-action@4350529f410221787ccf424e50133cbc1b52704e
+      with:
+        endpoint: ${{ secrets.S3EndPoint }}
+        aws_key_id: ${{ secrets.S3AccessKeyId }}
+        aws_secret_access_key: ${{ secrets.S3AccessKey }}
+        aws_bucket: ${{ secrets.S3Bucket }}
+        destination_dir: /releases-data
+        source_dir: ./releases-data/
