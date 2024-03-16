@@ -129,6 +129,8 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
 
     var harmony = new Harmony("xyz.misakal.vcc.patch");
 
+    ProductNamePatch.PatchAppProductName(harmony, vccCoreLibAssembly);
+
     var patches = Assembly.GetExecutingAssembly().GetTypes()
         .Where(type => type.IsAssignableTo(typeof(IPatch)))
         .Where(type => PatcherApp.Config.EnabledPatches.Contains(type.Name))
