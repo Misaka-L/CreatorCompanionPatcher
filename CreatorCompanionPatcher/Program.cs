@@ -36,7 +36,7 @@ if (!CheckIsPlatformSupport())
     return;
 }
 
-PatcherApp.Config = await PatcherConfig.LoadConfigAsync();
+PatcherApp.Config = await PatcherConfig.LoadConfigAsync(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "patcher.json"));
 
 // Extra bundle
 var tempPath = Path.Join(Path.GetTempPath(), Path.GetRandomFileName(), "/");
@@ -91,7 +91,7 @@ static bool CheckIsPlatformSupport()
 
 static async ValueTask<string> ExtraSingleFileExe(string tempPath)
 {
-    var vccExePath = Path.GetFullPath("CreatorCompanion.exe");
+    var vccExePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanion.exe");
     var vccDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanion.dll"));
 
     Log.Information("Check is CreatorCompanion.exe needs to be extracted....");
