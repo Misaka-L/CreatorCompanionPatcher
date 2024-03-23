@@ -46,7 +46,12 @@ public class LoggerPatch : IPatch
                 }
 
                 var logContent = logEvent.RenderMessage();
-                var wsMessage = CreateWSMessage("log", logContent);
+                var wsMessage = CreateWSMessage("log", new
+                {
+                    Message = logContent,
+                    logEvent.Level,
+                    Timstamp = logEvent.Timestamp
+                });
 
                 _sendWsMessageMethod.Invoke(_apiServerObject, new[] { wsMessage });
             }).ConfigureAwait(false);

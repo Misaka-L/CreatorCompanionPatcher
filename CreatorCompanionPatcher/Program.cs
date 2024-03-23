@@ -36,6 +36,8 @@ if (!CheckIsPlatformSupport())
     return;
 }
 
+Log.Warning("If you meet any bugs/problems, try to launch vcc without patcher. If problem disappear, please create a issues on github");
+
 PatcherApp.Config = await PatcherConfig.LoadConfigAsync(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "patcher.json"));
 
 // Extra bundle
@@ -92,7 +94,20 @@ static bool CheckIsPlatformSupport()
 static async ValueTask<string> ExtraSingleFileExe(string tempPath)
 {
     var vccExePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanion.exe");
-    var vccDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanion.dll"));
+    var vccDllPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanion.dll");
+    var vccExtraDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanion.dll"));
+
+    var vccBetaExePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanionBeta.exe");
+    var vccBetaDllPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanionBeta.dll");
+    var vccExtraBetaDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanionBeta.dll"));
+
+    if (File.Exists(vccBetaExePath) || File.Exists(vccBetaDllPath))
+    {
+        Log.Information("CreatorCompanionBeta.exe found, using it instead of CreatorCompanion.exe");
+        vccExePath = vccBetaExePath;
+        vccExtraDllPath = vccExtraBetaDllPath;
+        vccDllPath = vccBetaDllPath;
+    }
 
     Log.Information("Check is CreatorCompanion.exe needs to be extracted....");
     var reader = new ExecutableReader(vccExePath);
@@ -119,7 +134,7 @@ static async ValueTask<string> ExtraSingleFileExe(string tempPath)
 
     Log.Information("Extract Done!");
 
-    return !File.Exists(vccDllPath) ? vccExePath : vccDllPath;
+    return !File.Exists(vccExtraDllPath) ? vccExePath : vccExtraDllPath;
 }
 
 
@@ -129,7 +144,7 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
 
     var harmony = new Harmony("xyz.misakal.vcc.patch");
 
-    ProductNamePatch.PatchAppProductName(harmony, vccCoreLibAssembly);
+    ProductNamePatch.PatchAppProductName(harmony, vccCoreLibAssembly, vccAssembly);
 
     var patches = Assembly.GetExecutingAssembly().GetTypes()
         .Where(type => type.IsAssignableTo(typeof(IPatch)))

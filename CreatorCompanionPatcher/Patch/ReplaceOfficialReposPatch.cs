@@ -40,8 +40,7 @@ public class ReplaceOfficialReposPatch : IPatch
 
         harmony.Patch(refreshMethod, prefix: new HarmonyMethod(refreshPrefixMethod));
 
-        var providersCacheDirField = reposType.GetField("ProvidersCacheDir", BindingFlags.Static | BindingFlags.Public);
-        var providersCacheDir = providersCacheDirField.GetValue(null) as string;
+        var providersCacheDir = GetProvidersCacheDir(reposType, vccCoreLibAssembly);
 
         var createMethod = vpmPackageProviderType.GetMethod("Create", BindingFlags.Static | BindingFlags.Public,
             new[] { typeof(string), typeof(string), vrcRepoListType });
@@ -84,5 +83,21 @@ public class ReplaceOfficialReposPatch : IPatch
 
         __result = true;
         return false;
+    }
+
+    private static string? GetProvidersCacheDir(Type reposType, Assembly vpmCoreLibAssembly)
+    {
+        var providersCacheDirField = reposType.GetField("ProvidersCacheDir", BindingFlags.Static | BindingFlags.Public);
+
+        if (providersCacheDirField is not null)
+        {
+            Log.Information("you are using a old version of vcc, we will get the providersCacheDir using old patch method");
+            return providersCacheDirField.GetValue(null) as string;
+        }
+
+        var constantsType = vpmCoreLibAssembly.GetType("VRC.PackageManagement.Core.Constants");
+        var reposProvidersCacheDirField = constantsType.GetField("ReposProvidersCacheDir", BindingFlags.Public | BindingFlags.Static);
+
+        return reposProvidersCacheDirField.GetValue(null) as string;
     }
 }

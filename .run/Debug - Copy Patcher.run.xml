@@ -1,0 +1,6 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Debug - Copy Patcher" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Debug" platform="Any CPU" runtime="Portable" target_folder="$USER_HOME$/AppData/Local/Programs/VRChat Creator Companion" target_framework="net6.0" uuid_high="-8089934367455297368" uuid_low="-7809185468009471230" />
+    <method v="2" />
+  </configuration>
+</component>
