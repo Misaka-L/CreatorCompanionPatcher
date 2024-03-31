@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using CreatorCompanionPatcher;
 using CreatorCompanionPatcher.Models;
 using CreatorCompanionPatcher.Patch;
@@ -10,18 +11,12 @@ using Serilog.Sinks.SystemConsole.Themes;
 using SingleFileExtractor.Core;
 
 var commandLineArgs = Environment.GetCommandLineArgs().ToList();
-var cleanupArgIndex = commandLineArgs.FindIndex(arg => arg == "-cleanup");
-if (cleanupArgIndex != -1)
-{
-    if (cleanupArgIndex >= commandLineArgs.Count)
-        return;
 
-    var cleanupPath = commandLineArgs[cleanupArgIndex + 1];
+// Set current directory
+var currentDirectory = commandLineArgs.Count > 1 ? commandLineArgs[^1] : AppDomain.CurrentDomain.BaseDirectory;
+Directory.SetCurrentDirectory(currentDirectory);
 
-    Directory.Delete(cleanupPath, true);
-    return;
-}
-
+// Logger Configuration
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
     .WriteTo.Console(theme: AnsiConsoleTheme.Code)
@@ -30,45 +25,38 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.LogListener()
     .CreateLogger();
 
+Log.Information("Current Directory: {CurrentDirectory}", Directory.GetCurrentDirectory());
+
 if (!CheckIsPlatformSupport())
 {
     Log.Fatal("Only support Windows yet!");
     return;
 }
 
-Log.Warning("If you meet any bugs/problems, try to launch vcc without patcher. If problem disappear, please create a issues on github");
+// Check is patcher need to be extracted
+if (commandLineArgs.FindIndex(arg => arg == "--start") == -1 && !await CheckAndExtraItself())
+    return;
 
-PatcherApp.Config = await PatcherConfig.LoadConfigAsync(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "patcher.json"));
+Log.Warning(
+    "If you meet any bugs/problems, try to launch vcc without patcher. If problem disappear, please create a issues on github");
+
+PatcherApp.Config =
+    await PatcherConfig.LoadConfigAsync();
 
 // Extra bundle
-var tempPath = Path.Join(Path.GetTempPath(), Path.GetRandomFileName(), "/");
+var tempPath = GetTempPath();
 
-var vccDllPath = await ExtraSingleFileExe(tempPath);
+var vccDllPath = await GetCreatorCompanionAssemblyFile(tempPath);
 var vccLibPath = Path.GetFullPath(Path.Join(tempPath, "vcc-lib.dll"));
 var vccCoreLibPath = Path.GetFullPath(Path.Join(tempPath, "vpm-core-lib"));
 
 // Load Assembly and apply patch
-
 Log.Information("Load CreatorCompanion assembly ({VccDllPath})", vccDllPath);
 var vccAssembly = Assembly.LoadFrom(vccDllPath);
 var vccLibAssembly = Assembly.LoadFrom(vccLibPath);
 var vccCoreLibAssembly = Assembly.LoadFrom(vccCoreLibPath);
 
 ApplyPatches(vccAssembly, vccLibAssembly, vccCoreLibAssembly);
-
-AppDomain.CurrentDomain.ProcessExit += (_, _) =>
-{
-    Log.Information("Starting Cleanup Temp files...");
-    var selfPath = Process.GetCurrentProcess().MainModule?.FileName;
-
-    if (selfPath is null)
-    {
-        Log.Error("Unable to cleanup Temp files, can't found self executable path");
-        return;
-    }
-
-    Process.Start(selfPath, $"-cleanup {tempPath}");
-};
 
 // Start the vcc
 Log.Information("Done! Starting...");
@@ -91,30 +79,57 @@ static bool CheckIsPlatformSupport()
     return OperatingSystem.IsWindows();
 }
 
-static async ValueTask<string> ExtraSingleFileExe(string tempPath)
+#region Locate CreatorCompanion Files
+
+static string FindCreatorCompanionAssemblyFile(string path)
 {
-    var vccExePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanion.exe");
-    var vccDllPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanion.dll");
-    var vccExtraDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanion.dll"));
+    const string vccBetaDllFileName = "CreatorCompanionBeta.dll";
+    const string vccBetaExeFileName = "CreatorCompanionBeta.exe";
+    const string vccDllFileName = "CreatorCompanion.dll";
+    const string vccExeFileName = "CreatorCompanion.exe";
 
-    var vccBetaExePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanionBeta.exe");
-    var vccBetaDllPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "CreatorCompanionBeta.dll");
-    var vccExtraBetaDllPath = Path.GetFullPath(Path.Join(tempPath, "CreatorCompanionBeta.dll"));
+    if (File.Exists(Path.Join(path, vccBetaDllFileName)))
+        return Path.Join(path, vccBetaDllFileName);
 
-    if (File.Exists(vccBetaExePath) || File.Exists(vccBetaDllPath))
-    {
-        Log.Information("CreatorCompanionBeta.exe found, using it instead of CreatorCompanion.exe");
-        vccExePath = vccBetaExePath;
-        vccExtraDllPath = vccExtraBetaDllPath;
-        vccDllPath = vccBetaDllPath;
-    }
+    if (File.Exists(Path.Join(path, vccDllFileName)))
+        return Path.Join(path, vccDllFileName);
+
+    if (File.Exists(Path.Join(path, vccBetaExeFileName)))
+        return Path.Join(path, vccBetaExeFileName);
+
+    if (File.Exists(Path.Join(path, vccExeFileName)))
+        return Path.Join(path, vccExeFileName);
+
+    throw new InvalidOperationException("Can't found CreatorCompanion File");
+}
+
+static async ValueTask<string> GetCreatorCompanionAssemblyFile(string tempPath)
+{
+    var vccAssemblyFilePath = FindCreatorCompanionAssemblyFile(Directory.GetCurrentDirectory());
 
     Log.Information("Check is CreatorCompanion.exe needs to be extracted....");
-    var reader = new ExecutableReader(vccExePath);
 
-    if (!reader.IsSingleFile) return !File.Exists(vccDllPath) ? vccExePath : vccDllPath;
+    if (await ExtraSingleFileExeAsync(vccAssemblyFilePath, tempPath))
+        return FindCreatorCompanionAssemblyFile(tempPath);
 
-    Log.Information("# Extract the bundle of CreatorCompanion.exe to {Path}...", tempPath);
+    // If the file isn't a single file publish file
+    return vccAssemblyFilePath;
+}
+
+#endregion
+
+static async Task<bool> ExtraSingleFileExeAsync(string exePath, string tempPath)
+{
+    if (Path.GetExtension(exePath) != ".exe")
+        return false;
+
+    var reader = new ExecutableReader(exePath);
+
+    // If the file isn't a single file publish file, skip extra
+    if (!reader.IsSingleFile)
+        return false;
+
+    Log.Information("# Extract the bundle of {ExePath} to {Path}...", exePath, tempPath);
 
     foreach (var bundleFile in reader.Bundle.Files)
     {
@@ -134,9 +149,13 @@ static async ValueTask<string> ExtraSingleFileExe(string tempPath)
 
     Log.Information("Extract Done!");
 
-    return !File.Exists(vccExtraDllPath) ? vccExePath : vccExtraDllPath;
+    return true;
 }
 
+static string GetTempPath()
+{
+    return Path.Join(Path.GetTempPath(), Path.GetRandomFileName(), "/");
+}
 
 static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly vccCoreLibAssembly)
 {
@@ -144,6 +163,7 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
 
     var harmony = new Harmony("xyz.misakal.vcc.patch");
 
+    AppDomainBaseDirectoryPatch.ApplyPatch(harmony, Directory.GetCurrentDirectory());
     ProductNamePatch.PatchAppProductName(harmony, vccCoreLibAssembly, vccAssembly);
 
     var patches = Assembly.GetExecutingAssembly().GetTypes()
@@ -158,6 +178,44 @@ static void ApplyPatches(Assembly vccAssembly, Assembly vccLibAssembly, Assembly
         Log.Information("- Apply patch: {Name}", patch?.GetType().Name);
         patch?.ApplyPatch(harmony, vccAssembly, vccLibAssembly, vccCoreLibAssembly);
     }
+}
+
+static async ValueTask<bool> CheckAndExtraItself()
+{
+    var appExePath = Process.GetCurrentProcess().MainModule?.FileName;
+
+    var tempPatcherPath = GetTempPath();
+    if (!await ExtraSingleFileExeAsync(appExePath, tempPatcherPath))
+        return true;
+
+    var patcherAssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    var patcherAssemblyPath = Path.Join(tempPatcherPath, patcherAssemblyName + ".dll");
+    var patcherRuntimeConfigPath = Path.Join(tempPatcherPath, patcherAssemblyName + ".runtimeconfig.json");
+
+    var runtimeConfig = JsonNode.Parse(await File.ReadAllTextAsync(patcherRuntimeConfigPath));
+    runtimeConfig["runtimeOptions"].AsObject().Remove("includedFrameworks");
+    runtimeConfig["runtimeOptions"]["framework"] = new JsonObject{
+        ["name"] = "Microsoft.NETCore.App",
+        ["version"] = "6.0.27"
+    };
+
+    await File.WriteAllTextAsync(patcherRuntimeConfigPath, runtimeConfig.ToJsonString());
+
+    Process.Start(new ProcessStartInfo
+    {
+        FileName = "dotnet",
+        ArgumentList =
+        {
+            patcherAssemblyPath,
+            "--start",
+            Directory.GetCurrentDirectory()
+        },
+        CreateNoWindow = false,
+        UseShellExecute = true,
+        WorkingDirectory = Directory.GetCurrentDirectory(),
+    });
+
+    return false;
 }
 
 #endregion

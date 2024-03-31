@@ -10,26 +10,27 @@
         <FileVersion>0.4.0</FileVersion>
         <Version>0.4.0</Version>
         <NeutralLanguage>en-US</NeutralLanguage>
-        <SelfContained>true</SelfContained>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <PublishSingleFile>true</PublishSingleFile>
-        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
         <LangVersion>default</LangVersion>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <IncludeNativeLibrariesInSingleFile>true</IncludeNativeLibrariesInSingleFile>
         <ApplicationIcon>VCCPatcher.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Lib.Harmony.Thin" Version="2.3.1.1" />
-      <PackageReference Include="Serilog" Version="3.1.1" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-      <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-      <PackageReference Include="SingleFileExtractor.Core" Version="2.2.0" />
+        <PackageReference Include="Lib.Harmony.Thin" Version="2.3.1.1"/>
+        <PackageReference Include="Serilog" Version="3.1.1"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1"/>
+        <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageReference Include="SingleFileExtractor.Core" Version="2.2.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CreatorCompanionPatcher.Core\CreatorCompanionPatcher.Core.csproj" />
+        <ProjectReference Include="..\CreatorCompanionPatcher.Core\CreatorCompanionPatcher.Core.csproj"/>
     </ItemGroup>
 
 </Project>
