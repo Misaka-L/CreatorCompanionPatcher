@@ -18,6 +18,8 @@ public class LoggerPatch : IPatch
     private static PropertyInfo? _wsMessageTypeProperty;
     private static PropertyInfo? _wsMessageDataProperty;
 
+    private static bool _useOldWebsocketLogFormat = false;
+
     public void ApplyPatch(Harmony harmony, Assembly vccAssembly, Assembly vccLibAssembly, Assembly vccCoreLibAssembly)
     {
         if (!PatchVRCLoggerLib(vccCoreLibAssembly, harmony))
@@ -34,6 +36,12 @@ public class LoggerPatch : IPatch
             return;
         }
 
+        if (vccAssembly.GetType("VCCApp.Models.LogEvent") is null)
+        {
+            _useOldWebsocketLogFormat = true;
+            Log.Warning("Failed to get type VCCApp.Models.LogEvent, WebSocket Logger will use old format");
+        }
+
         LogListener.Instance.LogEventEmitted += (_, logEvent) =>
         {
             Task.Run(() =>
@@ -46,6 +54,15 @@ public class LoggerPatch : IPatch
                 }
 
                 var logContent = logEvent.RenderMessage();
+
+                if (_useOldWebsocketLogFormat)
+                {
+                    var oldWsMessage = CreateWSMessage("log", logContent);
+
+                    _sendWsMessageMethod.Invoke(_apiServerObject, new[] { oldWsMessage });
+                    return;
+                }
+
                 var wsMessage = CreateWSMessage("log", new
                 {
                     Message = logContent,
